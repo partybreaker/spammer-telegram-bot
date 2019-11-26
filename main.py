@@ -10,13 +10,13 @@ from pprint import pprint
 from sparser import Parser
 
 
-TOKEN = ''
+TOKEN = '911989161:AAHSwX1UOIjxqfZzhVEjMlghG0nDa5DMSLk'
 
 THREADS_LIMIT = 700
 
 chat_ids_file = 'chat_ids.txt'
 
-ADMIN_CHAT_ID = 000000000
+ADMIN_CHAT_ID = 318377477
 COUNT_SERV = 62
 
 users_amount = [0]
@@ -48,7 +48,6 @@ def save_chat_id(chat_id):
 
 
 def send_message_users(message):
-
 	def send_message(chat_id):
 		data = {
 			'chat_id': chat_id,
@@ -258,11 +257,7 @@ def handle_message_received(message):
 		print(f'Номер введен неправильно. Введено {len(text)} символов, ожидается 11')
 
 def main():
-	try:
-		bot.polling(none_stop=True)
-	except requests.exceptions.ConnectTimeout:
-		apihelper.proxy = {"https": random.choice(parser.load_proxies())}
-		main()
+	bot.polling(none_stop=True)
 
 
 if __name__ == '__main__':
